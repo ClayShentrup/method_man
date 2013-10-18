@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'method_man/version'
+require 'method_object/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'method_man'
-  spec.version       = MethodMan::VERSION
+  spec.version       = MethodObject::VERSION
   spec.authors       = ['Clay Shentrup']
   spec.email         = %w(cshentrup@gmail.com)
   spec.summary       = %q{Provides a MethodObject class which implements Kent Beck's "method object" pattern.}

@@ -24,6 +24,10 @@ class MethodObject
     @non_block_parameter_names ||= non_block_parameters.map { |parameter| parameter.fetch(1) }
   end
 
+  def block_parameter
+    @block_parameter ||= parameters.find { |parameter| parameter[0] == :block }
+  end
+
   private
 
   def add_generator
@@ -36,7 +40,7 @@ class MethodObject
   
   def add_getters
     add_parameter_getters
-    add_block_getter
+    add_block_getter if block_parameter
   end
 
   def add_parameter_getters
@@ -47,10 +51,6 @@ class MethodObject
 
   def add_block_getter
     method_object_class.send(:attr_reader, block_name)
-  end
-
-  def block_parameter
-    @block_parameter ||= parameters.find { |parameter| parameter[0] == :block }
   end
 
   def parameters

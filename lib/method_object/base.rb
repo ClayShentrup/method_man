@@ -2,7 +2,7 @@ class MethodObject::Base
   class << self
     private :new
 
-    def call(options, &block)
+    def call(options = {}, &block)
       new(
         options,
         block,
@@ -21,6 +21,7 @@ class MethodObject::Base
     options.each do |parameter_name, value|
       instance_variable_set("@#{parameter_name}", value)
     end
+    return unless generator.block_parameter
     instance_variable_set("@#{generator.block_name}", block)
   end
 end

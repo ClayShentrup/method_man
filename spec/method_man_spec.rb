@@ -46,4 +46,17 @@ describe MethodObject do
                            2,
                          ]
   end
+
+  context 'without arguments' do
+    subject do
+      described_class.new do
+        def call
+        end
+      end
+    end
+
+    it 'works' do
+      subject.call
+    end
+  end
 end

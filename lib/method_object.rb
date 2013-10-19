@@ -20,6 +20,10 @@ class MethodObject
     block_parameter.fetch(1)
   end
 
+  def parameter_names
+    @parameter_names ||= parameters.map(&:last)
+  end
+  
   def non_block_parameter_names
     @non_block_parameter_names ||= non_block_parameters.map { |parameter| parameter.fetch(1) }
   end
@@ -39,18 +43,9 @@ class MethodObject
   end
   
   def add_getters
-    add_parameter_getters
-    add_block_getter if block_parameter
-  end
-
-  def add_parameter_getters
-    non_block_parameter_names.each do |parameter_name|
+    parameter_names.each do |parameter_name|
       method_object_class.send(:attr_reader, parameter_name)
     end
-  end
-
-  def add_block_getter
-    method_object_class.send(:attr_reader, block_name)
   end
 
   def parameters

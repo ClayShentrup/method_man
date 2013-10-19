@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'method_object/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'method_object'
+  spec.name          = 'method_man'
   spec.version       = MethodObject::VERSION
   spec.authors       = ['Clay Shentrup']
   spec.email         = %w(cshentrup@gmail.com)

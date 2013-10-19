@@ -24,6 +24,6 @@ Defines a MethodObject class which implements Kent Beck's "[method object](http:
     end
   end
   
-  MakeArbitraryArray.call('Elliot') { |input| input + 1 }
+  MakeArbitraryArray.call(name: 'Elliot') { |input| input + 1 }
   => ["ELLI", 21, 2, 3]
 ```

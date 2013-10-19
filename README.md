@@ -5,6 +5,8 @@ Defines a MethodObject class which implements Kent Beck's "[method object](http:
 ## Example
 
 ```ruby
+  require 'method_object'
+
   MakeArbitraryArray = MethodObject.new do
     def call(name, age = 21, &test_block)
       [shortname, age, yield(1), test_value] 

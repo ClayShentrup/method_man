@@ -1,58 +1,42 @@
 require 'method_object/version'
-require 'method_object/base'
 
 class MethodObject
-  def self.new
-    super.call
+  def self.new(*args, &block)
+    super(*args, block).call
   end
 
-  def initialize(&definition_block)
-    @definition_block = definition_block
+  def initialize(*required_keyword_args, block)
+    @required_keyword_args = required_keyword_args
+    @block = block
   end
 
   def call
-    add_generator
-    add_getters
-    method_object_class
-  end
+    code = self.code
+    block = @block
 
-  def block_name
-    block_parameter.fetch(1)
-  end
-
-  def parameter_names
-    @parameter_names ||= parameters.map(&:last)
-  end
-  
-  def non_block_parameter_names
-    @non_block_parameter_names ||= non_block_parameters.map { |parameter| parameter.fetch(1) }
-  end
-
-  def block_parameter
-    @block_parameter ||= parameters.find { |parameter| parameter[0] == :block }
-  end
-
-  private
-
-  def add_generator
-    method_object_class.instance_variable_set(:@generator, self)
-  end
-
-  def method_object_class
-    @method_object_class ||= Class.new(Base, &@definition_block)
-  end
-  
-  def add_getters
-    parameter_names.each do |parameter_name|
-      method_object_class.send(:attr_reader, parameter_name)
+    Struct.new(*@required_keyword_args) do
+      private_class_method :new
+      eval(code)
+      def call
+        fail NotImplementedError, "Please define the call method"
+      end
+      class_eval(&block)
     end
   end
 
-  def parameters
-    method_object_class.instance_method(:call).parameters
+  def code
+    <<-CODE
+      def self.call(#{required_keyword_args_string})
+        new(#{ordered_args_string}).call
+      end
+    CODE
   end
 
-  def non_block_parameters
-    parameters - [block_parameter]
+  def required_keyword_args_string
+    @required_keyword_args.map { |arg| "#{arg}:" }.join(',')
+  end
+
+  def ordered_args_string
+    @required_keyword_args.join(',')
   end
 end

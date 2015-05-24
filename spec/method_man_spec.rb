@@ -2,61 +2,37 @@ require 'method_object'
 
 describe MethodObject do
   subject do
-    described_class.new do
-      def call(
-        required_arg_1,
-        required_arg_2,
-        optional_arg_1 = :optional_arg_1,
-        optional_arg_2 = :optional_arg_2,
-        &my_block)
-        result << optional_arg_2 << yield(1)
-      end
-
-      def result
-        [
-          required_arg_1,
-          required_arg_2,
-          optional_arg_1,
-          my_block.call(2),
-        ]
-      end
-
-      def required_arg_1
-        :required_arg_1
+    described_class.new(:value_one, :value_two) do
+      def call
+        value_one + value_two
       end
     end
+  end
+
+  let(:value_one) { 1 }
+  let(:value_two) { 2 }
+  let(:actual_result) do
+    subject.call(value_one: value_one, value_two: value_two)
   end
 
   it 'works' do
-    result = subject.call(
-      required_arg_1: :required_arg_1,
-      required_arg_2: :required_arg_2,
-      optional_arg_1: :optional_arg_1,
-      optional_arg_2: :optional_arg_2,
-    ) do |block_arg|
-      block_arg + 1
-    end
-
-    expect(result).to eq [
-                           :required_arg_1,
-                           :required_arg_2,
-                           :optional_arg_1,
-                           3,
-                           :optional_arg_2,
-                           2,
-                         ]
+    expect(actual_result).to eq 3
   end
 
-  context 'without arguments' do
-    subject do
-      described_class.new do
-        def call
-        end
-      end
-    end
+  it 'uses required keyword arguments' do
+    expect { subject.call }.to raise_error ArgumentError
+  end
 
-    it 'works' do
-      subject.call
+  it 'makes new a private class method' do
+    expect { subject.new }.to raise_error NoMethodError
+  end
+
+  context 'without a provided instance call method' do
+    subject { described_class.new(:value_one) {} }
+
+    it 'raises an error' do
+      expect { subject.call(value_one: value_one) }
+        .to raise_error NotImplementedError
     end
   end
 end

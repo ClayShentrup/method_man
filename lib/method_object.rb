@@ -1,42 +1,53 @@
 require 'method_object/version'
 
 class MethodObject
-  def self.new(*args, &block)
-    super(*args, block).call
-  end
-
-  def initialize(*required_keyword_args, block)
-    @required_keyword_args = required_keyword_args
-    @block = block
-  end
-
-  def call
-    code = self.code
-    block = @block
-
-    Struct.new(*@required_keyword_args) do
-      private_class_method :new
-      eval(code)
-      def call
-        fail NotImplementedError, "Please define the call method"
-      end
-      class_eval(&block)
+  class << self
+    def attrs(*attributes)
+      define_attr_accessors(attributes)
+      define_setup_methods(attributes)
     end
-  end
 
-  def code
-    <<-CODE
-      def self.call(#{required_keyword_args_string})
-        new(#{ordered_args_string}).call
-      end
-    CODE
-  end
+    private
 
-  def required_keyword_args_string
-    @required_keyword_args.map { |arg| "#{arg}:" }.join(',')
-  end
+    def define_attr_accessors(attributes)
+      attributes.each { |attribute| send(:attr_accessor, attribute) }
+    end
 
-  def ordered_args_string
-    @required_keyword_args.join(',')
+    def define_setup_methods(attributes)
+      instance_eval(
+        <<-CODE
+          def self.call(**args)
+            new(args).call
+          end
+
+          private_class_method :new
+        CODE
+      )
+
+      class_eval(
+        <<-CODE
+          def initialize(#{required_keyword_args_string(attributes)})
+            #{keyword_arg_instance_variables(attributes)} =
+              #{ordered_args_string(attributes)}
+          end
+
+          def call
+            fail NotImplementedError, "Please define the call method"
+          end
+        CODE
+      )
+    end
+
+    def required_keyword_args_string(attributes)
+      attributes.map { |arg| "#{arg}:" }.join(', ')
+    end
+
+    def ordered_args_string(attributes)
+      attributes.join(',')
+    end
+
+    def keyword_arg_instance_variables(attributes)
+      attributes.map { |attribute| "@#{attribute}" }.join(', ')
+    end
   end
 end

@@ -2,7 +2,9 @@ require 'method_object'
 
 describe MethodObject do
   subject do
-    described_class.new(:value_one, :value_two) do
+    Class.new(described_class) do
+      attrs(:value_one, :value_two)
+
       def call
         value_one + value_two
       end
@@ -28,7 +30,9 @@ describe MethodObject do
   end
 
   context 'without a provided instance call method' do
-    subject { described_class.new(:value_one) {} }
+    subject do
+      Class.new(described_class) { attrs(:value_one) }
+    end
 
     it 'raises an error' do
       expect { subject.call(value_one: value_one) }

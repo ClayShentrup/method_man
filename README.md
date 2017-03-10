@@ -22,7 +22,9 @@ gem 'method_man', require: 'method_object'
 ```ruby
   require 'method_object'
 
-  MakeArbitraryArray = MethodObject.new(:first_name, :last_name, :message) do
+  class MakeArbitraryArray < MethodObject
+    attrs(:first_name, :last_name, :message)
+
     def call
       [fullname, message, 42]
     end

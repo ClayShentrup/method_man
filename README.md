@@ -29,8 +29,6 @@ gem 'method_man', require: 'method_object'
       [fullname, message, 42]
     end
 
-    private
-
     def fullname
       "#{first_name} #{last_name}"
     end

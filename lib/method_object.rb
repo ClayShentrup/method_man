@@ -65,7 +65,7 @@ class MethodObject
         end
       RUBY
     )
-    send(candidate.delegated_method)
+    public_send(candidate.delegated_method)
   end
 
   def handle_ambiguous_missing_method(candidates, method_name)

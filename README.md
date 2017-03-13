@@ -37,5 +37,30 @@ gem 'method_man', require: 'method_object'
     last_name: 'Smith',
     message: 'Hi',
   )
-  => ["John Smith", 'Hi', 42]
+  => ['John Smith', 'Hi', 42]
+```
+
+Also allows automatic delegation inspired by Go's
+[delegation](https://nathany.com/good/).
+
+
+```ruby
+  require 'method_object'
+
+  class MakeArbitraryArray < MethodObject
+    attrs(:company)
+
+    def call
+      [
+        company.name,
+        name, # Automatic delegation since company has a `name` method
+        company_name, # Automatic delegation with prefix
+      ]
+    end
+  end
+
+  company = Company.new(name: 'Tyrell Corporation')
+
+  MakeArbitraryArray.call(company: company)
+  => ['Tyrell Corporation', 'Tyrell Corporation', 'Tyrell Corporation']
 ```

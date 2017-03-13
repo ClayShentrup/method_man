@@ -1,0 +1,30 @@
+AllCops:
+  Exclude:
+    - spec/*
+  TargetRubyVersion: 2.4
+
+# We don't care about method length, since we check method cyclomatic
+# complexity.
+Metrics/MethodLength:
+  Enabled: false
+Metrics/ClassLength:
+    Enabled: false
+Metrics/ModuleLength:
+    Enabled: false
+
+# Trailing commas make for clearer diffs because the last line won't appear
+# to have been changed, as it would if it lacked a comma and had one added.
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: comma
+Style/TrailingCommaInLiteral:
+  EnforcedStyleForMultiline: comma
+
+# Cop supports --auto-correct.
+# Configuration parameters: PreferredDelimiters.
+Style/PercentLiteralDelimiters:
+  PreferredDelimiters:
+    # Using `[]` for string arrays instead of `()`, since normal arrays are
+    # indicated with `[]` not `()`.
+    '%w': '[]'
+    '%W': '[]'
+    '%i': '[]'

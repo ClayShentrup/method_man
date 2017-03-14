@@ -2,8 +2,6 @@
 
 Defines a MethodObject class which facilitates basic setup for Kent Beck's "[method object](http://c2.com/cgi/wiki?MethodObject)".
 
-The MethodObject class is largely based on a Ruby Struct, but with a few additional features:
-
 * Facilitates basic method object pattern setup. You only need to supply an instance `call` method.
 * Accepts a list of arguments which are mapped to required keyword arguments.
 * Disallows calling `new` on the resulting MethodObject class instance.

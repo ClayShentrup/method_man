@@ -45,12 +45,16 @@ class MethodObject
   def candidates_for_method_missing(method_name)
     potential_candidates =
       self.class.attributes.map do |attribute|
-        PotentialDelegator.new(attribute, send(attribute), method_name)
+        PotentialDelegator.new(
+          attribute,
+          public_send(attribute),
+          method_name,
+        )
       end +
       self.class.attributes.map do |attribute|
         PotentialDelegatorWithPrefix.new(
           attribute,
-          send(attribute),
+          public_send(attribute),
           method_name,
         )
       end
@@ -87,11 +91,7 @@ class MethodObject
       object.respond_to?(delegated_method)
     end
 
-    def call
-      object.public_send(delegated_method)
-    end
-
-    alias_method :method_to_call_on_delegate, :delegated_method
+    alias_method(:method_to_call_on_delegate, :delegated_method)
   end
 
   # Represents a possible match of the form:
@@ -100,10 +100,6 @@ class MethodObject
     Struct.new(:attribute, :object, :delegated_method) do
       def candidate?
         name_matches? && object.respond_to?(method_to_call_on_delegate)
-      end
-
-      def call
-        object.public_send(method_to_call_on_delegate)
       end
 
       def method_to_call_on_delegate
@@ -160,7 +156,7 @@ class MethodObject
     end
 
     def required_keyword_args_string
-      attributes.map { |arg| "#{arg}:" }.join(',')
+      attributes.map { |arg| "#{arg}:" }.join(', ')
     end
 
     def assignments

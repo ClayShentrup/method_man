@@ -19,6 +19,10 @@ class MethodObject
     attr_reader(:attributes)
 
     private(:new)
+
+    def inherited(child_class)
+      child_class.instance_variable_set(:@attributes, [])
+    end
   end
 
   def initialize(_); end

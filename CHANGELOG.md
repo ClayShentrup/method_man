@@ -1,5 +1,8 @@
 # Change log
 
+## 2.1.5
+Fix bug where a MethodObject missing attr would raise a nil MethodObject @attributes error instead of method_missing.
+
 ## 2.1.4
 Fix bug with delegating to assignment methods like `foo=`.
 

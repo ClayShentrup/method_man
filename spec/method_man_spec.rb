@@ -16,6 +16,20 @@ RSpec.describe(MethodObject) do
       end
     end
 
+    describe 'calling a missing method' do
+      subject do
+        Class.new(described_class) do
+          def call
+            undefined_method
+          end
+        end
+      end
+
+      it 'raises method missing exception' do
+        expect { subject.call }.to raise_error(NameError, /undefined_method/)
+      end
+    end
+
     specify { expect(subject.call).to be(true) }
   end
 

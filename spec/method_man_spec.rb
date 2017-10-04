@@ -1,7 +1,8 @@
 # frozen_string_literal: true
-require 'method_object'
 
-describe MethodObject do
+require('method_object')
+
+RSpec.describe(MethodObject) do
   it 'makes new a private class method' do
     expect { subject.new }.to raise_error(NoMethodError)
   end
@@ -23,17 +24,13 @@ describe MethodObject do
       Class.new(described_class) do
         attrs(:company, :user)
 
-        @sent_messages = []
-
-        def self.sent_messages
-          @sent_messages
-        end
-
         def call
           {
             address: address,
             respond_to_address: respond_to_missing?(:address),
             company_address: company_address,
+            id_for_joe: company_id_for('Joe'),
+            block_arg: company_run_a_block { |block_arg| block_arg * 2 },
             respond_to_company_address: respond_to_missing?(:company_address),
             company: company,
             respond_to_name: respond_to_missing?(:name),
@@ -50,6 +47,12 @@ describe MethodObject do
 
     let(:company) do
       double('company', address: company_address, name: company_name)
+        .tap do |company|
+          allow(company).to receive(:id_for).with('Joe').and_return(1234)
+          allow(company).to receive(:run_a_block) do |&block|
+            block.call(4321)
+          end
+        end
     end
     let(:company_address) { '101 Minitru Lane' }
     let(:company_name) { 'Periscope Data' }
@@ -63,6 +66,8 @@ describe MethodObject do
         address: company_address,
         respond_to_address: true,
         company_address: company_address,
+        id_for_joe: 1234,
+        block_arg: 8642,
         respond_to_company_address: true,
         company: company,
         respond_to_name: false,
@@ -148,8 +153,8 @@ describe MethodObject do
           attrs(:company)
           @sent_messages = []
 
-          def self.sent_messages
-            @sent_messages
+          class << self
+            attr_reader(:sent_messages)
           end
 
           def call

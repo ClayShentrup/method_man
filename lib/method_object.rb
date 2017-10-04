@@ -1,5 +1,6 @@
 # frozen_string_literal: true
-require 'method_object/version'
+
+require('method_object/version')
 
 # See gemspec for description
 class MethodObject
@@ -32,7 +33,9 @@ class MethodObject
     when 0
       super
     when 1
-      define_and_call_new_method(candidates.first)
+      delegate = candidates.first
+      define_delegated_method(delegate)
+      public_send(delegate.delegated_method, *args, &block)
     else
       handle_ambiguous_missing_method(candidates, name)
     end
@@ -61,15 +64,15 @@ class MethodObject
     potential_candidates.select(&:candidate?)
   end
 
-  def define_and_call_new_method(candidate)
+  def define_delegated_method(delegate)
     self.class.class_eval(
       <<-RUBY
-        def #{candidate.delegated_method}
-          #{candidate.attribute}.#{candidate.method_to_call_on_delegate}
+        def #{delegate.delegated_method}(*args, &block)
+          #{delegate.attribute}
+            .#{delegate.method_to_call_on_delegate}(*args, &block)
         end
       RUBY
     )
-    public_send(candidate.delegated_method)
   end
 
   def handle_ambiguous_missing_method(candidates, method_name)

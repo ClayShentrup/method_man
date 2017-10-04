@@ -1,5 +1,8 @@
 # Change log
 
+## 2.1.4
+Fix bug with delegating to assignment methods like `foo=`.
+
 ## 2.1.1
 Fix bug preventing arguments from being forwarded to delegated methods.
 

@@ -25,6 +25,8 @@ RSpec.describe(MethodObject) do
         attrs(:company, :user)
 
         def call
+          self.name = 'New Company Name'
+          self.company_name = 'New Company Name 2'
           {
             address: address,
             respond_to_address: respond_to_missing?(:address),
@@ -58,10 +60,11 @@ RSpec.describe(MethodObject) do
     let(:company_name) { 'Periscope Data' }
     let(:user) { double('user', name: user_name) }
     let(:user_name) { 'Woody' }
-
     let(:result) { subject.call(company: company, user: user) }
 
     specify do
+      expect(company).to receive(:name=).ordered.with('New Company Name')
+      expect(company).to receive(:name=).ordered.with('New Company Name 2')
       expect(result).to eq(
         address: company_address,
         respond_to_address: true,
@@ -173,7 +176,8 @@ RSpec.describe(MethodObject) do
       end
 
       specify do
-        expect(subject.call(company: company)).to eq([company_name, company_name])
+        expect(subject.call(company: company))
+          .to eq([company_name, company_name])
       end
     end
   end

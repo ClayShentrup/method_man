@@ -66,12 +66,20 @@ class MethodObject
 
   def define_delegated_method(delegate)
     self.class.class_eval(
-      <<-RUBY
-        def #{delegate.delegated_method}(*args, &block)
-          #{delegate.attribute}
-            .#{delegate.method_to_call_on_delegate}(*args, &block)
-        end
-      RUBY
+      if delegate.method_to_call_on_delegate.to_s.end_with?('=')
+        <<-RUBY
+          def #{delegate.delegated_method}(arg)
+            #{delegate.attribute}.#{delegate.method_to_call_on_delegate}(arg)
+          end
+        RUBY
+      else
+        <<-RUBY
+          def #{delegate.delegated_method}(*args, &block)
+            #{delegate.attribute}
+              .#{delegate.method_to_call_on_delegate}(*args, &block)
+          end
+        RUBY
+      end
     )
   end
 

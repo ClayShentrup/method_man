@@ -69,7 +69,7 @@ class MethodObject
   end
 
   def define_delegated_method(delegate)
-    self.class.class_eval(
+    code =
       if delegate.method_to_call_on_delegate.to_s.end_with?('=')
         <<-RUBY
           def #{delegate.delegated_method}(arg)
@@ -84,7 +84,8 @@ class MethodObject
           end
         RUBY
       end
-    )
+
+    self.class.class_eval(code, __FILE__, __LINE__ + 1)
   end
 
   def handle_ambiguous_missing_method(candidates, method_name)
@@ -161,13 +162,11 @@ class MethodObject
     end
 
     def define_initializer
-      class_eval(
-        <<-RUBY
+      class_eval(<<-RUBY, __FILE__, __LINE__ + 1)
           def initialize(#{required_keyword_args_string})
             #{assignments}
           end
         RUBY
-      )
     end
 
     def required_keyword_args_string

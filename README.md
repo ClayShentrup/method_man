@@ -78,11 +78,11 @@ In the example, the instance method `Account#gamma` is refactored to `Gamma.comp
 TaskSender.send_task # This is redundant.
 ```
 
-A generic name also more clearly indicates that this is a method object, which only has one function and shouldn't generally contain additional methods.
+A generic name also more clearly indicates that this is a method object, which only has one function and shouldn't generally contain additional class methods.
 
 In the case of this gem, there's also a simple practical consideration: calling `call` by convention is simpler than requiring configuration of the specific method name.
 
-Why `call` instead of `compute`? Because in Ruby, we use `call` to invoke `Proc` objects, and it's consistent with analogous constructs in the language.
+Why `call` instead of `compute`? Because in Ruby, we use `call` to invoke `Proc` objects, so it's consistent with analogous constructs in the language.
 
 ### Noun vs. verb
 

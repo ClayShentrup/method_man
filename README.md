@@ -86,7 +86,7 @@ Why `call` instead of `compute`? Because in Ruby, we use `call` to invoke `Proc`
 
 ### Noun vs. verb
 
-Beck uses `TaskSender`. I personally prefer `SendTask`, essentially just preserving the name of whatever method you're converting to a method object. I don't think detail is of much import.
+Beck uses `TaskSender`. I personally prefer `SendTask`, essentially just preserving the name of whatever method you're converting to a method object. I don't think this detail is of much import.
 
 ## How useful is this pattern?
 Kent Beck has [raved about it](https://twitter.com/kentbeck/status/195168291134783489), saying:

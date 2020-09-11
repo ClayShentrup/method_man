@@ -1,103 +1,95 @@
 # frozen_string_literal: true
 
+require('delegate')
 require('method_object/version')
 
-# See gemspec for description
-class MethodObject
+# See gemspec for description.
+class MethodObject < SimpleDelegator
   class AmbigousMethodError < NameError; end
 
   class << self
-    def attrs(*attributes)
-      @attributes = attributes
-      Setup.call(attributes: attributes, subclass: self)
-    end
-
     def call(**args)
-      new(args).call
+      new(__object_factory__&.new(**args)).call
     end
-
-    attr_reader(:attributes)
 
     private(:new)
 
-    def inherited(child_class)
-      child_class.instance_variable_set(:@attributes, [])
+    def attrs(*attributes)
+      self.__object_factory__ = ObjectFactory.create(*attributes)
     end
-  end
 
-  def initialize(_); end
+    attr_accessor(:__object_factory__)
+  end
 
   def call
-    raise NotImplementedError, 'Define the call method'
+    raise(NotImplementedError, 'define the call method')
   end
 
-  def method_missing(name, *args, &block)
-    candidates = candidates_for_method_missing(name)
-    case candidates.length
-    when 0
-      super
-    when 1
-      delegate = candidates.first
-      define_delegated_method(delegate)
-      public_send(delegate.delegated_method, *args, &block)
-    else
-      handle_ambiguous_missing_method(candidates, name)
-    end
-  end
-
-  def respond_to_missing?(name)
-    candidates_for_method_missing(name).length == 1
-  end
-
-  def candidates_for_method_missing(method_name)
-    potential_candidates =
-      self.class.attributes.map do |attribute|
-        PotentialDelegator.new(
-          attribute,
-          public_send(attribute),
-          method_name,
-        )
-      end +
-      self.class.attributes.map do |attribute|
-        PotentialDelegatorWithPrefix.new(
-          attribute,
-          public_send(attribute),
-          method_name,
-        )
+  # Creates instances for delegation and caching method definitions.
+  class ObjectFactory
+    STRUCT_DEFINITION = lambda do |_class|
+      def method_missing(name, *args)
+        candidates = candidates_for_method_missing(name)
+        handle_ambiguous_missing_method(candidates, name) if candidates.length > 1
+        super
       end
-    potential_candidates.select(&:candidate?)
-  end
 
-  def define_delegated_method(delegate)
-    code =
-      if delegate.method_to_call_on_delegate.to_s.end_with?('=')
-        <<-RUBY
-          def #{delegate.delegated_method}(arg)
-            #{delegate.attribute}.#{delegate.method_to_call_on_delegate}(arg)
+      def respond_to_missing?(name, _include_private)
+        candidates = candidates_for_method_missing(name)
+        case candidates.length
+        when 0
+          return(super)
+        when 1
+          define_delegated_method(candidates.first)
+        end
+        true
+      end
+
+      def candidates_for_method_missing(method_name)
+        potential_candidates =
+          members.map do |attribute|
+            PotentialDelegator.new(
+              attribute,
+              public_send(attribute),
+              method_name,
+            )
+          end +
+          members.map do |attribute|
+            PotentialDelegatorWithPrefix.new(
+              attribute,
+              public_send(attribute),
+              method_name,
+            )
           end
-        RUBY
-      else
-        <<-RUBY
+        potential_candidates.select(&:candidate?)
+      end
+
+      def define_delegated_method(delegate)
+        code = <<~RUBY
           def #{delegate.delegated_method}(*args, &block)
             #{delegate.attribute}
               .#{delegate.method_to_call_on_delegate}(*args, &block)
           end
         RUBY
+        self.class.class_eval(code, __FILE__, __LINE__ + 1)
       end
 
-    self.class.class_eval(code, __FILE__, __LINE__ + 1)
-  end
+      def handle_ambiguous_missing_method(candidates, method_name)
+        raise(
+          AmbigousMethodError,
+          "#{method_name} is ambiguous: " +
+          candidates
+            .map do |candidate|
+              "#{candidate.attribute}.#{candidate.method_to_call_on_delegate}"
+            end
+            .join(', '),
+        )
+      end
+    end
 
-  def handle_ambiguous_missing_method(candidates, method_name)
-    raise(
-      AmbigousMethodError,
-      "#{method_name} is ambiguous: " +
-      candidates
-        .map do |candidate|
-          "#{candidate.attribute}.#{candidate.method_to_call_on_delegate}"
-        end
-        .join(', '),
-    )
+    def self.create(*attributes)
+      Struct.new(*attributes, keyword_init: true, &STRUCT_DEFINITION)
+    end
   end
 
   # Represents a possible match of the form:
@@ -125,7 +117,7 @@ class MethodObject
       private
 
       def name_matches?
-        delegated_method.to_s.start_with?(prefix)
+        delegated_method.start_with?(prefix)
       end
 
       def prefix
@@ -133,7 +125,7 @@ class MethodObject
       end
     end
 
-  # Dynamically defines custom attr_readers and initializer
+  # Dynamically defines custom attr_readers and initializer.
   class Setup < SimpleDelegator
     def self.call(attributes:, subclass:)
       new(attributes, subclass).call
@@ -157,16 +149,12 @@ class MethodObject
       __getobj__.send(:attr_reader, *attributes)
     end
 
-    def attr_accessor(attribute)
-      super
-    end
-
     def define_initializer
       class_eval(<<-RUBY, __FILE__, __LINE__ + 1)
-          def initialize(#{required_keyword_args_string})
-            #{assignments}
-          end
-        RUBY
+        def initialize(#{required_keyword_args_string})
+          #{assignments}
+        end
+      RUBY
     end
 
     def required_keyword_args_string
@@ -176,5 +164,9 @@ class MethodObject
     def assignments
       attributes.map { |attribute| "@#{attribute} = #{attribute}\n" }.join
     end
+  end
+
+  def respond_to_missing?(*args)
+    super || __getobj__.respond_to?(*args)
   end
 end

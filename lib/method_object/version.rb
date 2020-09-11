@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
-class MethodObject
-  VERSION = '2.2.0'
+require('delegate')
+
+class MethodObject < SimpleDelegator
+  VERSION = '3.0.0'
 end

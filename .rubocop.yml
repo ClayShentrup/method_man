@@ -1,22 +1,27 @@
 AllCops:
-  Exclude:
-    - spec/*
-  TargetRubyVersion: 2.4
+  NewCops: enable
+  TargetRubyVersion: 2.5
 
 # We don't care about method length, since we check method cyclomatic
 # complexity.
 Metrics/MethodLength:
   Enabled: false
+Metrics/BlockLength:
+  Enabled: false
 Metrics/ClassLength:
-    Enabled: false
+  Enabled: false
 Metrics/ModuleLength:
-    Enabled: false
+  Enabled: false
+Metrics/AbcSize:
+  Enabled: false
 
 # Trailing commas make for clearer diffs because the last line won't appear
 # to have been changed, as it would if it lacked a comma and had one added.
 Style/TrailingCommaInArguments:
   EnforcedStyleForMultiline: comma
-Style/TrailingCommaInLiteral:
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: comma
+Style/TrailingCommaInHashLiteral:
   EnforcedStyleForMultiline: comma
 
 # Cop supports --auto-correct.

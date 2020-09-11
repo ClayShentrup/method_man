@@ -3,5 +3,5 @@
 require('delegate')
 
 class MethodObject < SimpleDelegator
-  VERSION = '3.0.0'
+  VERSION = '3.0.1'
 end

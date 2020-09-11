@@ -124,49 +124,4 @@ class MethodObject < SimpleDelegator
         "#{attribute}_"
       end
     end
-
-  # Dynamically defines custom attr_readers and initializer.
-  class Setup < SimpleDelegator
-    def self.call(attributes:, subclass:)
-      new(attributes, subclass).call
-    end
-
-    attr_accessor(:attributes)
-
-    def initialize(attributes, subclass)
-      self.attributes = attributes
-      super(subclass)
-    end
-
-    def call
-      define_attr_readers
-      define_initializer
-    end
-
-    private
-
-    def define_attr_readers
-      __getobj__.send(:attr_reader, *attributes)
-    end
-
-    def define_initializer
-      class_eval(<<-RUBY, __FILE__, __LINE__ + 1)
-        def initialize(#{required_keyword_args_string})
-          #{assignments}
-        end
-      RUBY
-    end
-
-    def required_keyword_args_string
-      attributes.map { |arg| "#{arg}:" }.join(', ')
-    end
-
-    def assignments
-      attributes.map { |attribute| "@#{attribute} = #{attribute}\n" }.join
-    end
-  end
-
-  def respond_to_missing?(*args)
-    super || __getobj__.respond_to?(*args)
-  end
 end

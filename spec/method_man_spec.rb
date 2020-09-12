@@ -28,6 +28,10 @@ RSpec.describe(MethodObject) do
       method_object.call(block: block, attr1: attr1, attr2: attr2)
     end
 
+    def delegates?(method)
+      call { respond_to?(method) }
+    end
+
     it('makes .new a private class method') do
       expect { method_object.new }.to(raise_error(NoMethodError))
     end
@@ -40,19 +44,27 @@ RSpec.describe(MethodObject) do
       expect(call { local_method }).to(eq([attr1, attr2]))
     end
 
-    def delegates?(method)
-      call { respond_to?(method) }
-    end
-
     it('delegates to attrs') do
       expect(delegates?(:delegated_method)).to(be(true))
 
       expect(call { delegated_method }).to(be(delegated_value))
     end
 
+    it('caches methods delegated to attrs') do
+      call { delegated_method }
+      expect(call { defined?(delegated_method) }).to eq('method')
+      expect(call { delegated_method }).to(be(delegated_value))
+    end
+
     it('delegates to attrs with prefix') do
       expect(delegates?(:attr1_delegated_method)).to(be(true))
 
+      expect(call { attr1_delegated_method }).to(be(delegated_value))
+    end
+
+    it('caches methods delegated to attrs with prefix') do
+      call { delegated_method }
+      expect(call { defined?(attr1_delegated_method) }).to eq('method')
       expect(call { attr1_delegated_method }).to(be(delegated_value))
     end
 

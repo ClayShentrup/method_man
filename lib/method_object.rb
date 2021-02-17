@@ -117,7 +117,7 @@ class MethodObject < SimpleDelegator
       private
 
       def name_matches?
-        delegated_method.start_with?(prefix)
+        delegated_method.to_s.start_with?(prefix)
       end
 
       def prefix
